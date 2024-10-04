@@ -119,17 +119,15 @@ def export_to_onnx(model, models_dir):
     output_names = ['output']
     dynamic_axes = {'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
     tmp_model_path = str(models_dir / "resnet_trained_for_cifar10.onnx")
-    torch.onnx.export(
-            model,
-            dummy_inputs,
-            tmp_model_path,
-            export_params=True,
-            opset_version=13,
-            input_names=input_names,
-            output_names=output_names,
-            dynamic_axes=dynamic_axes,
-        )
-
+    from quark.torch import ModelExporter
+    from quark.torch.export.config.config import ExporterConfig, OnnxExporterConfig
+    config = ExporterConfig(json_export_config=OnnxExporterConfig())
+    exporter = ModelExporter(config=config, export_dir=tmp_model_path)
+    exporter.export_onnx_model(model=model,
+                               input_args=dummy_inputs,
+                               opset_version=13,
+                               input_names=input_names,
+                               output_names=output_names,)
 
 def main():
     _, models_dir, data_dir, _ = get_directories()
